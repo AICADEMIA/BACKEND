@@ -177,8 +177,6 @@ export function getAllTeachers(req, res) {
   }
   
 
-
-
   export function updateUser(req, res) {
     if (!req.auth || !req.auth.userId) {
       return res.status(400).json({ error: "Invalid user ID" });

@@ -15,6 +15,9 @@ const MIME_TYPES = {
   "image/bmp": "bmp",
   "image/tiff": "tiff",
   "image/jfif": "jfif",
+  "application/pdf": "pdf",  // Ajout des types MIME pour PDF
+  "application/vnd.ms-powerpoint": "ppt",  // Ajout des types MIME pour PPT
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",  // Ajout des types MIME pour PPTX
 };
 
 const storage = diskStorage({

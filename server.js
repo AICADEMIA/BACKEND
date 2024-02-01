@@ -5,9 +5,12 @@ import cors from "cors";
 import path from "path";
 import http from "http";
 
-import { errorHandler, notFoundError } from "./middlewares/error-handler.js";
+import {errorHandler, notFoundError } from "./middlewares/error-handler.js";
 
 import userRoute from "./routes/user.js";
+import seanceRoute from "./routes/senace.js";
+import classeRoute from "./routes/classe.js";
+import matiereRoute from "./routes/matiere.js";
 
 const app = express();
 
@@ -39,11 +42,12 @@ app.use((req, res, next) => {
 
 
 app.use("/user", userRoute);
-
+app.use("/seance",seanceRoute)
+app.use("/matiere",matiereRoute)
+app.use("/classe",classeRoute)
 
 app.use(notFoundError);
 app.use(errorHandler);
-
 
 
 server.listen(port, () => {

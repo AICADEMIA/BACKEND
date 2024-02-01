@@ -5,12 +5,12 @@ const SeanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  matiere: { type: mongoose.Types.ObjectId, ref: "Matiere", default: null },  
+  matiere: { type: mongoose.Types.ObjectId, ref: "Matiere", default: null },
 
-  classe: { type: mongoose.Types.ObjectId, ref: "Classe", default: null },  
+  classe: { type: mongoose.Types.ObjectId, ref: "Classe", default: null },
 
-  datedebut: { type: Date },
-  datefin: { type: Date},
+  datetimedebut: { type: Date },
+  datetimefin: { type: Date},
 
 
 });
@@ -18,3 +18,4 @@ const SeanceSchema = new mongoose.Schema({
 const Seance = mongoose.model("Seance", SeanceSchema);
 
 export default Seance;
+

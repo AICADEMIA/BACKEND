@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 
 const EtudiantSchema = new mongoose.Schema({
+     
     email: {
       type: String,
       required: true,
@@ -10,6 +11,12 @@ const EtudiantSchema = new mongoose.Schema({
   });
 
 const ClasseSchema = new mongoose.Schema({
+
+    classeName :{
+        type: String,
+        required: true,
+      },
+
    etudiants: [EtudiantSchema], 
 
   professeur: { type: mongoose.Types.ObjectId, ref: "Professeur", default: null },  
