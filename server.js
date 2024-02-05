@@ -13,15 +13,17 @@ import classeRoute from "./routes/classe.js";
 import matiereRoute from "./routes/matiere.js";
 
 const app = express();
+const databaseName = 'AICademia';
 
 const server = http.createServer(app);
 
 
 const port = process.env.PORT || 9090;
 mongoose.set("strictQuery", false);
-
+var mongoDBLink;
+mongoDBLink = `mongodb://127.0.0.1/${databaseName}`;
 mongoose
-  .connect("mongodb+srv://dali:KHe3zKln4Z1t1298@cluster0.4n6wuk0.mongodb.net/pfe", {
+  .connect(mongoDBLink, {
   })
   .then(() => console.log("connected"))
   .catch((error) => console.log(error));

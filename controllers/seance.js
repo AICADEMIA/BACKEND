@@ -1,10 +1,169 @@
-import axios from 'axios';
-import pkg from '@microsoft/microsoft-graph-client';
-const { Client, auth } = pkg;
 import dotenv from 'dotenv';
 import Seance from '../models/seance.js';
+import axios from 'axios';
+import { ClientSecretCredential } from '@azure/identity';
+import { Client } from '@microsoft/microsoft-graph-client';
+import Classe from '../models/classe.js'
+
 
 dotenv.config();
+
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
+const tenantId = process.env.TENANT_ID;
+
+const scopes = ['https://graph.microsoft.com/.default'];
+const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+
+const authProvider = {
+  getAccessToken: async () => {
+    try {
+      const accessToken = await credential.getToken(['https://graph.microsoft.com/.default']);
+      return accessToken.token; // Return the token
+    } catch (error) {
+      throw new Error(`Failed to retrieve an access token: ${error}`);
+    }
+  },
+};
+
+const graphClient = Client.initWithMiddleware({ authProvider });
+
+export const createTeamsMeeting = async (res, meetingData) => {
+  try {
+    const accessToken = await authProvider.getAccessToken();
+    const userId = '81386dce-d860-4600-8d05-3258caa56b04'; // Replace with the user ID
+
+    const response = await axios.post(`https://graph.microsoft.com/v1.0/users/${userId}/events`, meetingData, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+    console.log('Meeting created:', response.data);
+
+    // Send a response to the client
+    res.status(201).json(response.data);
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+
+    // Send an error response to the client
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export async function createSeance2(req, res) {
+  try {
+    const {
+      title,
+      matiereId,
+      classeId,
+      datetimedebut,
+      datetimefin,
+      email
+    } = req.body;
+
+    const newSeance = new Seance({
+      title,
+      matiere: matiereId,
+      classe: classeId,
+      datetimedebut,
+      datetimefin,
+    });
+
+    await newSeance.save();
+
+    console.log('Seance created successfully.');
+
+    res.status(201).json({
+      message: 'Seance and event created successfully.',
+      seance: newSeance,
+    });
+  } catch (error) {
+    console.error('Error creating seance and event:', error);
+
+    res.status(500).json({
+      error: 'Error creating seance and event',
+      message: error.message,
+    });
+  }
+}
+
+export async function createSeance(req, res) {
+  try {
+    const {
+      title,
+      matiereId,
+      classeId,
+      datetimedebut,
+      datetimefin,
+    } = req.body;
+
+    const classe = await Classe.findById(classeId);
+    if (!classe) {
+      return res.status(404).json({ error: 'Classe not found' });
+    }
+
+    console.log("classe is ",classe)
+    const emails = classe.etudiants.map(etudiant => etudiant.email);
+
+    console.log("the emails are",emails)
+
+    const attendees = emails.map(email => ({
+      emailAddress: { address: email, name: "" }, 
+      type: "required"
+    }));
+
+    const newSeance = new Seance({
+      title,
+      matiere: matiereId,
+      classe: classeId,
+      datetimedebut,
+      datetimefin,
+    });
+
+    await newSeance.save();
+
+    console.log('Seance created successfully.');
+
+    const meetingData = {
+      subject: title,
+      start: {
+        dateTime: datetimedebut,
+        timeZone: "Europe/Paris"
+      },
+      end: {
+        dateTime: datetimefin,
+        timeZone: "Europe/Paris"
+      },
+      location: {
+        displayName: "ESPRIT"
+      },
+      attendees,
+      allowNewTimeProposals: true,
+      isOnlineMeeting: true,
+      onlineMeetingProvider: "teamsForBusiness"
+    };
+
+    await createTeamsMeeting(res, meetingData);
+
+  } catch (error) {
+    console.error('Error creating seance and event:', error);
+    res.status(500).json({
+      error: 'Error creating seance and event',
+      message: error.message,
+    });
+  }
+}
+
+
+
+
+
+
+
+
+
 /*
 // Ensure all required environment variables are defined
 if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.TENANT_ID) {
@@ -75,54 +234,18 @@ async function createEvent(seanceId) {
   }
 }
 */
-export async function createSeance(req, res) {
-  try {
-    const {
-      title,
-      matiereId,
-      classeId,
-      datetimedebut,
-      datetimefin,
-    } = req.body;
 
-    const newSeance = new Seance({
-      title,
-      matiere: matiereId,
-      classe: classeId,
-      datetimedebut,
-      datetimefin,
-    });
-
-    await newSeance.save();
-
-    console.log('Seance created successfully.');
-
-    // Répondez avec le JSON de la séance créée
-    res.status(201).json({
-      message: 'Seance and event created successfully.',
-      seance: newSeance,
-    });
-  } catch (error) {
-    console.error('Error creating seance and event:', error);
-
-    // Répondez avec une erreur JSON
-    res.status(500).json({
-      error: 'Error creating seance and event',
-      message: error.message,
-    });
-  }
-}
 
 
 
 export async function getAllSeances(req, res) {
   try {
     const seances = await Seance.find()
-     .populate("matiere", "title")  
+     .populate("matiere", "title") 
      .populate('classe', "classeName"); 
 
     res.status(200).json({ seances });
-    console.log(matiere)
+   // console.log(matiere)
   } catch (error) {
     console.error('Error getting all seances:', error);
     res.status(500).json({ error: 'Error getting all seances' });

@@ -3,17 +3,17 @@ import Matiere from '../models/matiere.js';
 export async function createMatiere(req, res) {
     try {
       const { title, chapitre, charge } = req.body;
-      const { ppt, cour } = req.files;  // Ajout de cette ligne pour récupérer les fichiers PPT et PDF
+   //   const { ppt, cour } = req.files;  // Ajout de cette ligne pour récupérer les fichiers PPT et PDF
   
       const newMatiere = new Matiere({ title, chapitre, charge });
   
-      if (ppt) {
+    /*  if (ppt) {
         newMatiere.ppt = ppt[0].filename;
       }
   
       if (cour) {
         newMatiere.cour = cour[0].filename;
-      }
+      }*/
   
       const savedMatiere = await newMatiere.save();
       res.status(201).json(savedMatiere);

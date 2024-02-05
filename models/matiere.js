@@ -6,16 +6,16 @@ const MatiereSchema = new mongoose.Schema({
     required: true,
   },
   chapitre: {
-    type: Number,
+    type: String,
     required: true,
   },
   ppt: {
     type: String,
-    required: true,
+    required: false,
   },
   cour: {
     type: String,
-    required: true,
+    required: false,
   },
   charge: {
     type: Number,
