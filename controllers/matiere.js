@@ -1,50 +1,68 @@
 import Matiere from '../models/matiere.js';
+import { recognizeText } from '../config/ocr.js';
+import path from 'path';
+import { promisify } from 'util';
 
-export async function createMatiere(req, res) {
-    try {
-      const { title, chapitre, charge } = req.body;
-      const { ppt, cour } = req.files;  // Ajout de cette ligne pour récupérer les fichiers PPT et PDF
-  
-      const newMatiere = new Matiere({ title, chapitre, charge });
-  
-      if (ppt) {
-        newMatiere.ppt = ppt[0].filename;
-      }
-  
-      if (cour) {
-        newMatiere.cour = cour[0].filename;
-      }
-  
-      const savedMatiere = await newMatiere.save();
-      res.status(201).json(savedMatiere);
-    } catch (error) {
-      console.error('Error creating Matiere:', error);
-      res.status(500).json({ error: 'Error creating Matiere' });
-    }
-  }
-// Get all Matieres
-export async function getAllMatieres(req, res) {
-  try {
-    const matieres = await Matiere.find();
-    res.status(200).json(matieres);
-  } catch (error) {
-    console.error('Error getting all Matieres:', error);
-    res.status(500).json({ error: 'Error getting all Matieres' });
-  }
+import fs from 'fs';
+import PDFParser from 'pdf2json';
+
+
+export async function extractTextFromPDF(pdfFilePath) {
+  return new Promise((resolve, reject) => {
+    const pdfParser = new PDFParser(this,1);
+
+    pdfParser.on('pdfParser_dataError', errData => {
+      reject(errData.parserError);
+    });
+
+    pdfParser.on('pdfParser_dataReady', () => {
+      const extractedText = pdfParser.getRawTextContent();
+      resolve(extractedText); // Résoudre la promesse avec extractedText
+    });
+
+    pdfParser.loadPDF(pdfFilePath);
+  });
 }
 
-// Get Matiere by ID
-export async function getMatiereById(req, res) {
+
+export async function createMatiere(req, res) {
   try {
-    const matiere = await Matiere.findById(req.params.id);
-    if (!matiere) {
-      return res.status(404).json({ error: 'Matiere not found' });
+    const { title, chapitre, charge } = req.body;
+
+    // Récupérer le fichier PDF à partir de req.files
+    const courFile = req.files['cour'] ? req.files['cour'][0] : null;
+    const pptFile = req.files['ppt'] ? req.files['ppt'][0] : null;
+
+    // Si aucun fichier PDF n'est inclus dans la requête, renvoyer une erreur
+    if (!courFile || !courFile.mimetype.startsWith('application/pdf')) {
+      return res.status(400).json({ error: 'Veuillez inclure un fichier PDF' });
     }
-    res.status(200).json(matiere);
+
+    // Créer une nouvelle instance de Matiere avec les chemins de fichier
+    const newMatiere = new Matiere({ 
+      title, 
+      chapitre, 
+      charge, 
+      cour: courFile.path, 
+      ppt: pptFile ? pptFile.path : null 
+    });
+
+    const savedMatiere = await newMatiere.save();
+
+    const pdfFilePath = courFile.path;
+
+    const extractedText = await extractTextFromPDF(pdfFilePath);
+
+    fs.writeFileSync('./data.txt', extractedText);
+
+    console.log(extractedText)
+    
+
+    res.status(201).json(savedMatiere);
   } catch (error) {
-    console.error('Error getting Matiere by ID:', error);
-    res.status(500).json({ error: 'Error getting Matiere by ID' });
-  }
+    console.error('Erreur lors de la création de la Matiere:', error);
+    res.status(500).json({ error: 'Erreur lors de la création de la Matiere' });
+  } 
 }
 
 // Update Matiere by ID

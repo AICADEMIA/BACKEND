@@ -11,6 +11,8 @@ import userRoute from "./routes/user.js";
 import seanceRoute from "./routes/senace.js";
 import classeRoute from "./routes/classe.js";
 import matiereRoute from "./routes/matiere.js";
+import chatRoute from "./routes/chat.js";
+
 
 const app = express();
 
@@ -45,6 +47,7 @@ app.use("/user", userRoute);
 app.use("/seance",seanceRoute)
 app.use("/matiere",matiereRoute)
 app.use("/classe",classeRoute)
+app.use("/chat",chatRoute)
 
 app.use(notFoundError);
 app.use(errorHandler);

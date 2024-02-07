@@ -1,4 +1,4 @@
-import multer from "multer";
+import multer from 'multer';
 import { diskStorage } from "multer";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -48,4 +48,10 @@ export const uploadSingle = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter,
-}).single("diplome");
+}).single("ppt");
+
+export const uploadMultiple = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limite de taille des fichiers
+  fileFilter,
+}).fields([{ name: 'ppt', maxCount: 1 }, { name: 'cour', maxCount: 1 }]);

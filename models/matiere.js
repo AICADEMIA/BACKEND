@@ -11,7 +11,7 @@ const MatiereSchema = new mongoose.Schema({
   },
   ppt: {
     type: String,
-    required: true,
+    required: false,
   },
   cour: {
     type: String,
