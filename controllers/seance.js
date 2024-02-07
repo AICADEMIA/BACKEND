@@ -251,3 +251,62 @@ export async function getAllSeances(req, res) {
     res.status(500).json({ error: 'Error getting all seances' });
   }
 }
+export const createGroup = async (res, meetingData) => {
+  try {
+    const accessToken = await authProvider.getAccessToken();
+    const userId = '81386dce-d860-4600-8d05-3258caa56b04'; 
+
+    const response = await axios.post(`https://graph.microsoft.com/v1.0/groups`, meetingData, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+    console.log('Meeting created:', response.data);
+
+    const groupToSave = new Group({
+      groupid: response.data.id,  // Utilisez response.data au lieu de createdGroup
+      nom: response.data.displayName,  // Utilisez response.data au lieu de createdGroup
+    });
+
+    await groupToSave.save();
+
+    // Send a response to the client après l'enregistrement
+    res.status(201).json(response.data);
+    
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+
+    // Send an error response to the client
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const createTeam = async (res, meetingData) => {
+  try {
+    const accessToken = await authProvider.getAccessToken();
+    const userId = '81386dce-d860-4600-8d05-3258caa56b04'; 
+
+    const response = await axios.post(`https://graph.microsoft.com/v1.0/teams`, meetingData, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+    console.log('Meeting created:', response.data);
+
+    // Send a response to the client après l'enregistrement
+    res.status(201).json(response.data);
+    
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+
+    // Send an error response to the client
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+

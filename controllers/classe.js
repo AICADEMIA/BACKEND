@@ -35,4 +35,31 @@ export function createClasse(req, res) {
         res.status(500).json({ error: 'Error fetching classes' });
       });
   }
+
+
+
+
   
+
+export function updateClass(req, res) {
+  const { classId, ...updateFields } = req.body; 
+
+  Classe.findByIdAndUpdate(
+    classId,
+    {
+      $addToSet: { etudiants: { $each: updateFields.etudiants } }, 
+      $set: { classeName: updateFields.classeName } 
+    },
+    { new: true } 
+  )
+    .then((updatedClass) => {
+      if (!updatedClass) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+      res.status(200).json(updatedClass);
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Error updating class' });
+    });
+}
