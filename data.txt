@@ -1,16 +1,194 @@
-Demande[ETE2024]
-Prénom&Nom:RaniaBENAMORchambre:314
-[]Jequittemachambredéfinitivementle.............
-[]Jequittemachambreprovisoirementle.............
-[x]Jeconservemachambredu01/07/2024au31/08/2024
-RAPPEL:TOUTEQUINZAINECOMMENCEEESTDUE(ex:pourundépartle9août,vousdevrezrégler
-du1erau15août)
-Raisonduséjourd'été:
-[]Jeconservemachambrepourdesraisonsdecursusuniversitaire(Ajouterlesjustificatifsnécessaires).
-RaniaBENAMOR
-FaitàPARIS,le
-05/02/2024
-Signature
+Le service de résolution de noms
+Niveau: 4ème 
+Sabrine Laffet
+ A.U: 20212022
+Unité Pédagogique: Réseaux 
+  Module : Services et administration des réseaux 
 ----------------Page (0) Break----------------
-
+Structure du Module: SAR 
+sabrine.laffet@esprit.tn2
+Service WEB
+Service de messagerie 
+Service DNS
+Service Supervision 
+Service annuaire 
 ----------------Page (1) Break----------------
+Cours: Service WEB
+sabrine.laffet@esprit.tn3
+Service WEB
+Service de messagerie 
+Service de résolution de noms
+Service Supervision 
+----------------Page (2) Break----------------
+Objectifs et Pré requis
+sabrine.laffet@esprit.tn4
+Objectifs 
+Généraux 
+•Comprendre, installer et 
+configurer le service DNS
+Objectifs 
+Spécifiques
+•Comprendre le principe de 
+DNS
+• Maitriser la notion d’un 
+serveur DNS secondaire et 
+du cache DNS.
+•Maitriser la configuration 
+d’un serveur DNS primaire 
+avec Bind.
+•Configuration et tests du 
+serveur de nom Bind.
+•Intégration avec le service 
+web
+Pré requis
+•Réseaux IP et routage , 
+Administration Linux  
+----------------Page (3) Break----------------
+Plan du Cours
+sabrine.laffet@esprit.tn5
+Introduction 
+Comprendre le principe de DNS
+L’hiérarchie DNS
+Conclusion 
+----------------Page (4) Break----------------
+Introduction 
+sabrine.laffet@esprit.tn6
+La plupart des utilisateurs préfèrent en effet un nom convivial comme esprit.tn  pour 
+accéder à un ordinateur tel qu'un serveur de messagerie ou un serveur Web au lieu 
+de l’utilisation des adresses IP.
+⇒Utilisation du fichier de résolution locale ( hosts.txt ) pour la résolution des nom 
+pendant les années 80.
+Toute  modification  dans  ce  fichier  doit  être  faite  sur  toutes  les 
+machines.
+La solution : 
+DNS
+----------------Page (5) Break----------------
+Présentation
+•Le Système des Noms de Domaine est un système 
+hiérarchique qui assure la correspondance entre des noms 
+et des adresses IP. Il utilise un protocole de communication 
+client/serveur UDP/TCP sur le port 53.
+7
+Résolution directe
+www.esprit.tn
+193.95.54.21
+Résolution inverse
+www.esprit.tn
+193.95.54.21
+----------------Page (6) Break----------------
+ 
+Le DNS est dali
+8
+www.esprit.tn
+Serveur 1:
+192.168.1.10
+Serveur 2:
+192.168.1.11
+Un  service  peut  être  déployer  sur 
+deux  serveurs  pour  des  raison  de 
+répartition  de  charge  ou  de  haute 
+disponibilité.
+Dans ce cas, la réponse à la requête 
+de  résolution  du  nom  de  domaine 
+www.esprit.tn      peut      être 
+192.168.1.10 ou bien 192.168.1.11
+----------------Page (7) Break----------------
+ 
+Le DNS n’est pas bijectif
+9
+Serveur :
+192.168.1.10
+Différents  services  (  web,  mail, 
+transfert de fichier ... ) peuvent être 
+installer  sur  la  même  machine 
+physique.
+Dans ce cas, la réponse à la requête 
+de  résolution  du  nom  de  domaine 
+www.esprit.tn  ,  mail.esprit.tn  et 
+ftp.esprit.tn     est     l’adresse  
+192.168.1.10.
+www.esprit.tn
+mail.esprit.tn
+ftp.esprit.tn
+----------------Page (8) Break----------------
+Architecture du service DNS
+sabrine.laffet@esprit.tn10
+Requête HTTP
+Réponse  HTTP
+Client WEB
+Serveur  WEB
+Serveur DNS
+Resolver
+Port 53
+Requête DNS @ IP ? 
+www.esprit.com
+Réponse 
+40.11.11.12
+----------------Page (9) Break----------------
+11
+.
+frukorgcomtn
+decnfswneteduens
+supcomesprit
+racine
+TLD
+Le domaine 
+fr
+Le domaine 
+edu.fr
+La zone tn
+esprit.ens.tn
+L’hiérarchie DNS
+----------------Page (10) Break----------------
+L’hiérarchie DNS
+✔Les niveaux supérieurs TLD (Top Level Domain) sont organisés au niveau 
+géographique et/ou thématiques .fr .uz .uk .com .mil .
+✔Chaque nœud définit un domaine : suite de noms séparés par des points
+✔Les nœuds possèdent tous un nom (de 0 à 63 caractères) et correspondant 
+à une ressource (qui peut être vide). 
+✔Deux nœuds frères ne peuvent pas avoir le même nom. 
+✔Le nœud racine (root) est constitué de 0 caractères
+✔Une "zone" est une organisation logique (ou pour être plus précis, une 
+organisation  administrative)  des  domaines.  Le  rôle  d'une  zone  est 
+principalement de simplifier l'administration des domaines. Le domaine 
+«.com» peut être découpé en plusieurs zones, z1.com, z2.com, ...zn.com. 
+L'administration  des  zones  sera  déléguée  afin  de  simplifier  la  gestion 
+globale du domaine.
+----------------Page (11) Break----------------
+La résolution inverse
+sabrine.laffet@esprit.tn13
+•Le processus doit fournir, pour une adresse IP, le nom correspondant.
+•Pour cela il y a une zone particulière, in-addr.arpa, qui permet la résolution inverse d'adresse IP. 
+----------------Page (12) Break----------------
+L’arborescence
+Parcours de l’arbre et nom de domaine
+– la descente dans l’arbre est représentée de la droite vers la gauche
+– chaque niveau de l’arborescence est séparé par un point
+Pour déterminer l’adresse IP correspondante au nom : www.esprit.ens.tn.
+1- trouver  un NS (serveur de noms) de la racine «.»
+2-obtenir le NS de tn.
+3-Interroger le DNS de la zone tn. pour un NS de ens.tn.
+4-Le NS de esprit.ens.tn.identifie www.et renvoi son adresse IP
+c’est le rôle du resolver
+sabrine.laffet@esprit.tn14
+----------------Page (13) Break----------------
+sabrine.laffet@esprit.tn15
+Ensemble de 13 serveurs (13 Racines DNS) dans le monde gérés par l’ICANN.
+Les serveurs racines DNS
+----------------Page (14) Break----------------
+L’arborescence
+sabrine.laffet@esprit.tn16
+----------------Page (15) Break----------------
+sabrine.laffet@esprit.tn17
+Rôles 
+Il y a trois rôles impliqués dans le DNS
+----------------Page (16) Break----------------
+sabrine.laffet@esprit.tn18
+Rôles 
+Le RESOLVER
+• Prends la demande de l'application,
+• Formate la demande dans le paquet UDP
+• Envoi la demande au cache DNS
+SERVEUR CACHE
+• Renvoie la réponse si elle est déjà connue
+•Autrement il recherche un serveur autoritaire qui a l'information
