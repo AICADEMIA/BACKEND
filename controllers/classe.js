@@ -27,6 +27,9 @@ const authProvider = {
 
 const graphClient = Client.initWithMiddleware({ authProvider });
 
+
+
+
 export const createGroup = async (res, meetingData) => {
   try {
     const accessToken = await authProvider.getAccessToken();
@@ -42,8 +45,8 @@ export const createGroup = async (res, meetingData) => {
     console.log('Meeting created:', response.data);
 
     const groupToSave = new Group({
-      groupid: response.data.id,  // Utilisez response.data au lieu de createdGroup
-      nom: response.data.displayName,  // Utilisez response.data au lieu de createdGroup
+      groupid: response.data.id,  
+      nom: response.data.displayName,  
     });
 
     await groupToSave.save();
@@ -57,7 +60,7 @@ export const createGroup = async (res, meetingData) => {
     // Send an error response to the client
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}; 
 
 
 

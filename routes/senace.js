@@ -1,6 +1,5 @@
 import express from 'express';
 import { createTeamsMeeting ,getAllSeances } from '../controllers/seance.js';
-import Seance from "../models/seance.js"
 import Seance from '../models/seance.js';
 
 const router = express.Router();
