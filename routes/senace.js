@@ -1,5 +1,5 @@
 import express from 'express';
-import { createTeamsMeeting } from '../controllers/seance.js';
+import { createTeamsMeeting ,getAllSeances } from '../controllers/seance.js';
 import Seance from "../models/seance.js"
 import Seance from '../models/seance.js';
 
@@ -33,6 +33,9 @@ router.post('/', async (req, res) => {
     }
   });
   
+
+  router.post('/seances', getAllSeances);
+
 
 
 
