@@ -1,30 +1,34 @@
 import express from 'express';
-import { createGroup,createTeam } from '../controllers/classe.js';
+import { createGroup,createTeam ,getAllGroups} from '../controllers/classe.js';
 import Group from '../models/group.js';
 import Graph from'../models/graphmodel.js'
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    try {
+  try {
+      // Récupération des données de la requête
+      const graphData = req.body;
+      console.log("from post man", graphData);
 
-      const  graph = new Graph(req.body) //req.body;
-          console.log("from post man",req.body)
-            
+      // Modification des champs display name et mailNickname
+      graphData.displayName = graphData.description;
+      graphData.mailNickname = `${graphData.mailNickname}@WWLx255327.onmicrosoft.com`;
 
-   
+      // Création de l'objet Graph
+      const graph = new Graph(graphData);
 
-   
-  
-      const meetingData =  graph ;
-      await createGroup(res, req.body.object);
-        //  console.log("aaaaaaaaaaaaaa:",graph)
-  
-    } catch (error) {
+      // Appel à la fonction createGroup avec l'objet modifié
+      await createGroup(res, graphData.object);
+
+      // Gestion de l'erreur
+  } catch (error) {
       console.error('Error in route handler:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  }
+});
 
+
+  router.get('/',getAllGroups);
 
   
 

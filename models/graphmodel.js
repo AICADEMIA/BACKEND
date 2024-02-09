@@ -8,19 +8,21 @@ import mongoose from "mongoose";
 const graphSchema = new mongoose.Schema(
     {description:String,
         displayName:String,
-        groupTypes:[String],
-        isAssignableToRole:Boolean,
-        mailEnabled:Boolean,
-    mailEnabled:Boolean,
-    securityEnabled:Boolean,
+        groupTypes:[ 
+            "Unified"
+        ],
+
+        isAssignableToRole:false,
+        mailEnabled:true,
+    mailEnabled:true,
+    securityEnabled:true,
     mailNickname:String,
-   "owners@odata.bind":[String],
-    "members@odata.bind":[String]}
-
-
+   "owners@odata.bind":["https://graph.microsoft.com/v1.0/users/81386dce-d860-4600-8d05-3258caa56b04"],
+    "members@odata.bind":["https://graph.microsoft.com/v1.0/users/jalila.jalila@WWLx255327.onmicrosoft.com"]}
 
 );
 
 
 
 export default mongoose.model("Graph", graphSchema);;
+           

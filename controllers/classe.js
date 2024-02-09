@@ -95,6 +95,20 @@ export const createTeam = async (res, meetingData) => {
 
 
 
+export async function getAllGroups(req, res) {
+  try {
+    const groups = await Group.find()
+     .populate("group", "nom")  
+
+    res.status(200).json({ groups });
+    console.log(matiere)
+  } catch (error) {
+    console.error('Error getting all groups:', error);
+    res.status(500).json({ error: 'Error getting all groups' });
+  }
+}
+
+
 
 
 
