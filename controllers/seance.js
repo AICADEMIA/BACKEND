@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
 import 'dotenv/config'; 
-
+import Seance from "../models/seance.js"
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const tenantId = process.env.TENANT_ID;

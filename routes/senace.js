@@ -1,5 +1,7 @@
 import express from 'express';
 import { createTeamsMeeting } from '../controllers/seance.js';
+import Seance from "../models/seance.js"
+import Seance from '../models/seance.js';
 
 const router = express.Router();
 router.post('/', async (req, res) => {
@@ -15,12 +17,24 @@ router.post('/', async (req, res) => {
       const meetingData = { subject, start, end, attendees, allowNewTimeProposals, isOnlineMeeting ,onlineMeetingProvider};
       await createTeamsMeeting(res, meetingData);
   
-      // Do not send a response here; it's already being handled in createTeamsMeeting
+      const newSeance = new Seance({ 
+        title:subject, 
+        datetimedebut:start, 
+        datetimefin:end, 
+      });
   
+      const savedSeance = await newSeance.save();
+
+      res.status(201).json(savedMatiere);
+
     } catch (error) {
       console.error('Error in route handler:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+  
+
+
+
   
 export default router;

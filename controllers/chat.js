@@ -26,7 +26,7 @@ const openai = new OpenAI({
         const response = await openai.chat.completions.create({
           model: 'gpt-3.5-turbo',
           messages: [
-            { role: 'user', content: `Tu es un enseignant et tu dois commencer par te presenter comme un enseignant et apres en se basant sur le fichier data.txt (sans avouer que tu se base sur lui ) donne moi un cour complet ` },
+            { role: 'user', content: ` you are a  teacher, and you  must begin by introducing myself as a teacher. Then, based on the file data.txt (without admitting that you are  relying on it), give me a complete lesson.` },
             { role: 'assistant', content: segment }
           ],
           max_tokens: 2000
@@ -51,7 +51,7 @@ const openai = new OpenAI({
   }
   
   function addIntroduction(content) {
-    const introduction = "Bonjour, je suis votre enseignante. Je m'appelle Farah et je vais vous assister dans ce cours. ";
+    const introduction = "Bonjour, je suis votre enseignante. je vais vous assister dans ce cours. ";
     return introduction + content;
   }
   

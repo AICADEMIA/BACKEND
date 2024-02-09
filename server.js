@@ -18,7 +18,6 @@ const app = express();
 
 const server = http.createServer(app);
 
-
 const port = process.env.PORT || 9090;
 mongoose.set("strictQuery", false);
 
