@@ -9,14 +9,6 @@ const MatiereSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  ppt: {
-    type: String,
-    required: false,
-  },
-  cour: {
-    type: String,
-    required: true,
-  },
   charge: {
     type: Number,
     required: true,

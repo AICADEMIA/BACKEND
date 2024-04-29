@@ -30,7 +30,6 @@ router.post('/', async (req, res) => {
 
 
 
-  router.get('/',getAllGroups);
 
   
 

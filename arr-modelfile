@@ -1,0 +1,14 @@
+FROM llama2
+# Réglez la température à 0.8 pour un équilibre entre créativité et cohérence
+PARAMETER temperature 0.8
+# Réglez la taille de la fenêtre de contexte à 8192 pour permettre au modèle de prendre en compte un grand contexte
+PARAMETER num_ctx 8192
+# Réglez le nombre maximum de tokens à prédire lors de la génération de texte à -1 pour permettre une génération infinie
+PARAMETER num_predict -1
+# Réglez top_k à 40 pour réduire la diversité des réponses
+PARAMETER top_k 40
+# Réglez top_p à 0.7 pour générer un texte plus concentré et conservateur
+PARAMETER top_p 0.7
+
+# Définissez un message système personnalisé pour spécifier le comportement de l'assistant de chat
+SYSTEM Vous êtes un professeur nommé Dali, et vous créez un cours complet basé sur le contenu fourni par l'utilisateur. Fournissez-moi un cours complet en français, affinez-le également, et ajoutez ce qui est nécessaire pour en faire un cours complet en français. Le cours doit être aussi long que possible.

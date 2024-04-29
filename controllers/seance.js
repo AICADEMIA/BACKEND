@@ -31,6 +31,7 @@ export const createTeamsMeeting = async (res, meetingData) => {
     const accessToken = await authProvider.getAccessToken();
     const userId = '81386dce-d860-4600-8d05-3258caa56b04'; // Replace with the user ID
 
+
     const response = await axios.post(`https://graph.microsoft.com/v1.0/users/${userId}/events`, meetingData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -38,20 +39,16 @@ export const createTeamsMeeting = async (res, meetingData) => {
       },
     });
 
+
     console.log('Meeting created:', response.data);
 
-    // Send a response to the client
-    res.status(201).json(response.data);
   } catch (error) {
     console.error('Error creating meeting:', error);
 
-    // Send an error response to the client
-    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
 
-//createTeamsMeeting().then(() => console.log('Teams meeting creation attempted.'));
 
 
 export async function getAllSeances(req, res) {
@@ -67,3 +64,54 @@ export async function getAllSeances(req, res) {
     res.status(500).json({ error: 'Error getting all seances' });
   }
 }
+
+
+
+
+
+  export async function getLastAddedSeance(req, res) {
+    try {
+      const lastSeance = await Seance.findOne().sort({ createdAt: -1 });
+      res.status(200).json(lastSeance);
+    } catch (error) {
+      console.error("Error while fetching last added seance:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+
+
+
+
+
+
+  export async function GetEvent(req, res) {
+    try {
+      // Obtention de l'access token
+      const accessToken = await authProvider.getAccessToken();
+  
+      const userId = '81386dce-d860-4600-8d05-3258caa56b04'; // Replace with the user ID
+
+      const response = await axios.get(`https://graph.microsoft.com/v1.0/users/${userId}/events?$select=subject,organizer,attendees,start,end,location,categories,onlineMeeting`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+      });
+  
+      // Retourne les données de réponse
+      res.status(200).json(response.data);
+  
+    } catch (error) {
+      // Gestion des erreurs
+     console.error('Error getting event:', error);
+  
+      // Log des détails de l'erreur
+      console.error('Error details:', error.response.data);
+  
+      // Envoi d'une réponse d'erreur
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+  
+   

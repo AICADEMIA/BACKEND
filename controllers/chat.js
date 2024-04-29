@@ -1,65 +1,78 @@
-import OpenAI from 'openai';
 import fs from 'fs';
 import 'dotenv/config'; 
+import fetch from 'node-fetch';
 
-const OPENAI_API_KEY = "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";
+// Importez le module 'fs' pour lire le contenu du fichier
+export async function runModel(res,userContent) {
+    const content1 = fs.readFileSync('./data.txt', 'utf-8');
+    const url = 'http://localhost:11434/api/chat ';
+    const data = {
+        model: 'arr-llama',
+        messages: [
+            { role: 'user', content: content1 },
+        ] 
+    };
 
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
-  });
-  export async function chatgpt(req, res) {
     try {
-  
-      const content1 = fs.readFileSync('./data.txt', 'utf-8');
-      console.log(content1);
-  
-      // Ajoutez le message d'introduction au début de chaque segment de contenu
-      const contentWithIntroduction = addIntroduction(content1);
-  
-      // Divisez le contenu avec l'introduction en segments plus petits (par exemple, 2000 caractères par segment)
-      const segments = splitContent(contentWithIntroduction, 2000);
-  
-      let generatedResponses = [];
-  
-      // Envoyez chaque segment au modèle pour générer une réponse
-      for (const segment of segments) {
-        const response = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'user', content: ` you are a  teacher, and you  must begin by introducing myself as a teacher. Then, based on the file data.txt (without admitting that you are  relying on it), give me a complete lesson.` },
-            { role: 'assistant', content: segment }
-          ],
-          max_tokens: 2000
+        const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/json' }
         });
-  
-        if (response.choices && response.choices.length > 0) {
-          generatedResponses.push(response.choices[0].message.content.trim());
+    
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         }
-      }
-  
-      // Concaténez les réponses générées pour former une réponse complète et bien structurée
-      let result = generatedResponses.join(' ');
-  
-      // Supprimer le message d'introduction des réponses générées sauf pour la première réponse
-      result = result.replace(addIntroduction(''), '');
-  
-      return res.json({ result });
+    
+        // Parse the response body
+        const responseBody = await response.text();
+    
+        console.log("Response from API:", responseBody);
+    
+        const messagesArray = responseBody.split('\n').map(line => {
+            if (line.trim() !== '') {
+                return JSON.parse(line.trim()).message.content;
+            }
+            return ''; // Ignore les lignes vides
+        });
+
+        // Divisez le messagesArray en plusieurs parties
+        const parts = chunkArray(messagesArray, 5); // Divisez en parties de 5 messages
+
+        // Traitez chaque partie séparément
+        const results = parts.map((part, index) => {
+            // Ajoutez l'introduction au contenu du modèle seulement pour la première partie
+            const result = index === 0 ? addIntroduction(part.join('')) : part.join('');
+            console.log(result);
+            return result;
+        });
+    
+        res.status(200).json({ message: results });
+    
     } catch (error) {
-      console.error('Error generating text:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Erreur lors de l\'exécution du modèle :', error);
+        res.status(500).json({ error: error.message });
     }
-  }
+}
+
+// Fonction pour diviser un array en plusieurs sous-arrays
+function chunkArray(array, chunkSize) {
+    var index = 0;
+    var arrayLength = array.length;
+    var tempArray = [];
   
-  function addIntroduction(content) {
-    const introduction = "Bonjour, je suis votre enseignante. je vais vous assister dans ce cours. ";
+    for (index = 0; index < arrayLength; index += chunkSize) {
+        const chunk = array.slice(index, index+chunkSize);
+        tempArray.push(chunk);
+    }
+
+    return tempArray;
+}
+
+
+
+function addIntroduction(content) {
+    const introduction = "salut, je suis votre enseignant, je m'appelle Dali. et je vais vous aider aujourd'hui. ";
     return introduction + content;
-  }
-  
-  function splitContent(content, maxLength) {
-    const segments = [];
-    for (let i = 0; i < content.length; i += maxLength) {
-      segments.push(content.substring(i, i + maxLength));
-    }
-    return segments;
-  }
-  
+}
+

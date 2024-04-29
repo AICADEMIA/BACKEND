@@ -97,7 +97,6 @@ export const createTeam = async (res, meetingData) => {
 
 
 
-
 export async function getAllGroups(req, res) {
   try {
     const groups = await Group.find()

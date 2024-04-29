@@ -7,7 +7,7 @@ import fs from 'fs';
 import PDFParser from 'pdf2json';
 
 
-export async function extractTextFromPDF(pdfFilePath) {
+ async function extractTextFromPDF(pdfFilePath) {
   return new Promise((resolve, reject) => {
     const pdfParser = new PDFParser(this,1);
 
@@ -95,4 +95,17 @@ export async function deleteMatiere(req, res) {
     console.error('Error deleting Matiere:', error);
     res.status(500).json({ error: 'Error deleting Matiere' });
   }
+}
+
+
+
+export function getAllMatiere(req, res) {
+  Matiere.find()
+
+    .then((docs) => {
+      res.status(200).json(docs);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
 }
