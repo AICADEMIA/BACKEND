@@ -1,78 +1,56 @@
 import fs from 'fs';
-import 'dotenv/config'; 
-import fetch from 'node-fetch';
+import 'dotenv/config';
+import { Ollama } from 'ollama';
+import { translate } from '@vitalets/google-translate-api';
 
-// Importez le module 'fs' pour lire le contenu du fichier
-export async function runModel(res,userContent) {
-    const content1 = fs.readFileSync('./data.txt', 'utf-8');
-    const url = 'http://localhost:11434/api/chat ';
-    const data = {
-        model: 'arr-llama',
-        messages: [
-            { role: 'user', content: content1 },
-        ] 
-    };
-
+export async function runModel(res) {
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' }
+        // Lire le contenu du fichier data.txt
+        let content = fs.readFileSync('./data.txt', 'utf-8');
+
+        // Séparer le contenu en pages
+        const pages = content.split('----------------Page ');
+
+        // Sélectionner les cinq premières pages
+        const firstFivePages = pages.slice(0, 1).join('----------------Page ');
+
+        // Enlever les cinq premières pages du fichier
+        const remainingPages = pages.slice(1).join('----------------Page ');
+
+        // Enregistrer le reste des pages dans le fichier data.txt
+        fs.writeFileSync('./data.txt', remainingPages);
+
+        // Réassigner le contenu du fichier après avoir enlevé les cinq premières pages
+        content = remainingPages;
+
+        const ollama = new Ollama({ host: 'http://localhost:11434' })
+        const response = await ollama.chat({
+            model: 'llama2',
+            messages: [
+                {
+                    role: 'system',
+                    content: `Votre mission est d'enrichir ce contenu ${firstFivePages} (vous devez être strict et ne pas fournir d'informations autres que celles demandées dans votre mission). Assurez-vous que le contenu est cohérent et long (trop long)`
+                }
+            ],
+            stream: true,
+            keep_alive: 5400,
         });
-    
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+
+        // Extraire les messages du modèle
+        const messagesArray = [];
+        for await (const part of response) {
+            messagesArray.push(part.message.content);
         }
-    
-        // Parse the response body
-        const responseBody = await response.text();
-    
-        console.log("Response from API:", responseBody);
-    
-        const messagesArray = responseBody.split('\n').map(line => {
-            if (line.trim() !== '') {
-                return JSON.parse(line.trim()).message.content;
-            }
-            return ''; // Ignore les lignes vides
-        });
+        const allMessages = messagesArray.join('');
 
-        // Divisez le messagesArray en plusieurs parties
-        const parts = chunkArray(messagesArray, 5); // Divisez en parties de 5 messages
+        // Traduire la réponse de l'anglais au français
+        const translatedResponse = await translate(allMessages, { to: 'fr' });
 
-        // Traitez chaque partie séparément
-        const results = parts.map((part, index) => {
-            // Ajoutez l'introduction au contenu du modèle seulement pour la première partie
-            const result = index === 0 ? addIntroduction(part.join('')) : part.join('');
-            console.log(result);
-            return result;
-        });
-    
-        res.status(200).json({ message: results });
-    
+        console.log('Texte traduit :', translatedResponse.text);
+
+        res.status(200).json({ message: translatedResponse.text });
     } catch (error) {
         console.error('Erreur lors de l\'exécution du modèle :', error);
         res.status(500).json({ error: error.message });
     }
 }
-
-// Fonction pour diviser un array en plusieurs sous-arrays
-function chunkArray(array, chunkSize) {
-    var index = 0;
-    var arrayLength = array.length;
-    var tempArray = [];
-  
-    for (index = 0; index < arrayLength; index += chunkSize) {
-        const chunk = array.slice(index, index+chunkSize);
-        tempArray.push(chunk);
-    }
-
-    return tempArray;
-}
-
-
-
-function addIntroduction(content) {
-    const introduction = "salut, je suis votre enseignant, je m'appelle Dali. et je vais vous aider aujourd'hui. ";
-    return introduction + content;
-}
-

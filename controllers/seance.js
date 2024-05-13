@@ -51,6 +51,74 @@ export const createTeamsMeeting = async (res, meetingData) => {
 
 
 
+
+export const updateonline = async (res, meetingData) => {
+  try {
+    const accessToken = await authProvider.getAccessToken();
+    const userId = '81386dce-d860-4600-8d05-3258caa56b04'; // Replace with the user ID
+    const onlineMeetingId = '223587619080'
+
+    const response = await axios.patch(`https://graph.microsoft.com/v1.0/me/onlineMeetings/${onlineMeetingId}`, meetingData, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+
+    console.log('Meeting created:', response.data);
+
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+
+  }
+};
+
+
+
+
+
+
+
+
+export const createonline = async (res, meetingData) => {
+  try {
+    const accessToken = await authProvider.getAccessToken();
+    const userId = '81386dce-d860-4600-8d05-3258caa56b04'; // Replace with the user ID
+    const onlineMeetingId = '606569077'
+
+    const response = await axios.post(`https://graph.microsoft.com/v1.0/me/onlineMeetings`, meetingData, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+    });
+
+
+    console.log('Meeting created:', response.data);
+
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function getAllSeances(req, res) {
   try {
     const seances = await Seance.find()
