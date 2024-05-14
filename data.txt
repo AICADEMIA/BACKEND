@@ -1,0 +1,345 @@
+Conception Orienté Objet et 
+Programmation Java
+Chapitre 5: Héritage
+----------------Page (0) Break----------------
+2
+●Savoir identifier le lien entre les classes
+●Introduire la technique d’héritage : intérêt et  notation .
+●Introduire les droits d’accès d’une classe dérivée aux membres de la 
+classe de base.
+●Comprendre la construction d’un objet dérivé
+●Maîtriser la notion de redéfinition.
+●Comprendre la notion des classes abstraites
+Objectifs du chapitre
+----------------Page (1) Break----------------
+3
+Héritage
+----------------Page (2) Break----------------
+4
+❖L’héritage  est l'un des mécanismes  les plus puissants de programmation 
+orientée objet qui permet à une classe d'hériterles propriétéset les 
+comportementsd'une autre classe.
+❖La classe qui hérite est appelée sous-classeou classe dérivée ou classe fille, 
+tandis que la classe dont elle hérite est appelée classe de baseou classe 
+parentou super classe ou même classe mère. 
+Héritage: Définition
+----------------Page (3) Break----------------
+5
+❖Spécialisation: une nouvelle  classe  réutilise les attributs et les opérations d ’une 
+classe en y ajoutant et/ou des opérations particulières  à la nouvelle classe
+❖Redéfinition: une nouvelle  classe redéfinit  les attributs et opérations  d’une classe 
+de manière à en changer le sens et/ou le comportement pour le cas particulier 
+défini par la nouvelle classe
+❖Réutilisation: évite de réécrire du code existant et parfois on ne possède pas les 
+sources de la classe à hériter
+Héritage: Intérêts
+----------------Page (4) Break----------------
+6
+❖Si une application a 2 types d’utilisateurs : Student et Teacher.
+➢On arrive donc au design suivant:
+Héritage: Exemple
+On peut remarquer qu’il y a la 
+méthode et beaucoup d'attributs 
+qui sont en commun.
+----------------Page (5) Break----------------
+7
+❖Une sous-classe hérite d'une super-classe
+❖La super-classeest la classe dont on hérite
+❖La sous-classeest la classe qui hérite
+Héritage: Exemple
+----------------Page (6) Break----------------
+8
+◈La classe Student héritede la classe Person.
+◈Person est la classe mèreet Student la classe fille.
+◈Person est la super-classede la classe Student.
+◈Student est une sous-classede Person.
+➔Un objet de la classe Student ou Teacher est forcément un objet de la classe Person
+➔Un objet de la classe Person n’est pas forcément un objet de la classe Student ou Teacher 
+Héritage: terminologie
+----------------Page (7) Break----------------
+9
+❖Le mot clef extendsindique que la classe Student et la classe Teacher  
+héritent de la classe Person.
+Héritage: Exemple
+----------------Page (8) Break----------------
+10
+❖Toutes les classes héritent de la super classe « Object » 
+Ex: cela signifie : 
+❖Une classe ne peut étendre qu'une seule classe : Pas d'héritage multiple.
+❖Une classe déclarée finalne peut pas être étendue. 
+Héritage: Notons que...
+public class Person {
+...
+} 
+public class Person extendsObject {
+...
+} 
+public finalclass A {
+...
+} 
+La classe A ne peut pas être étendue.
+----------------Page (9) Break----------------
+11
+Héritage: Héritage à plusieurs niveaux
+----------------Page (10) Break----------------
+12
+Chaînage des constructeurs
+----------------Page (11) Break----------------
+13
+Héritage: Chaînage des constructeurs
+❖Tout constructeur, sauf celui de la classe java.lang.Object, fait appel à un autre 
+constructeur qui est : 
+➢Un constructeur de sa superclasse (appelé par super(...)) ; 
+➢Un autre constructeur de la même classe (appelé par this(...)). 
+❖Cet appel est mis nécessairement en première ligne du constructeur.
+❖En cas d'absence de cet appel, le compilateur ajoute super(); en première ligne
+du constructeur. 
+----------------Page (12) Break----------------
+14
+Si: cela signifie : 
+Héritage: Chaînage des constructeurs
+public class A {
+public A () { } 
+}
+INTERDIT
+public class A {
+publicA (int x) {
+super();
+this() ;
+}
+}Il n’est pas possible d’utiliser à la fois un autre 
+constructeur de la même classe et un 
+constructeur de sa classe mère dans la 
+définition d’un de ses constructeurs.
+public class A {
+public A () { 
+super();
+} 
+}
+Si:
+----------------Page (13) Break----------------
+public  class C extendsB {
+public  C() {
+super(1);
+System.out.println("Constructor  C");
+}
+} 
+public  class Test {
+public  static void main(String[]  args) {
+newC();
+}
+} 
+15
+Héritage: Chaînage des constructeurs
+public  class A {
+public  A() {
+System.out.println("Constructor  A");
+}
+} 
+public  class B extendsA {
+public  B() {
+System.out.println("Constructor  B");
+}
+public  B(int n) {
+this();
+System.out.println("2nd 
+Constructor B");
+}
+} 
+1
+2
+3
+4
+----------------Page (14) Break----------------
+16
+Héritage: Chaînage des constructeurs
+Output:
+Constructor A
+Constructor B
+2nd Constructor B
+Constructor C
+Explication:
+●Peut-être avez-vous  oublié  constructeur de A, si vous 
+n'avez  plus pensé que l'instruction  super(); est ajoutée 
+en première ligne  du constructeur  sans paramètre de la 
+classe B. 
+●L'instruction  super(); est aussi  ajoutée en première ligne 
+du constructeur de la classe A, faisant ainsi appel au 
+constructeur  sans paramètre de la classe Object, mais 
+ce constructeur ne fait rien. 
+----------------Page (15) Break----------------
+17
+Héritage: Chaînage des constructeurs
+❖Pour initialiser les attributs hérités, le constructeur d’une classe peut invoquer 
+un des constructeurs de la classe mère à l’aide du mot-clé super().
+super doit être  la première  instruction
+Si on ne fait pas d’appel explicite au constructeur de la superclasse, c’est le constructeur par défaut 
+de la superclasse qui est appelé implicitement.
+----------------Page (16) Break----------------
+18
+Héritage: Chaînage des constructeurs
+public class A {
+public int x;
+} 
+public class B extends A {
+public int y;
+public B (int x, int y) {
+this.x = x;
+this.y = y;
+}
+} 
+1
+Constructeur implicite:  erreur fréquente
+public class A {
+public int x;
+public A (int x) {
+this.x = x;
+}
+} 
+public class B extends A {
+public int y;
+public B (int x, int y) {
+this.x = x;
+this.y = y;
+}
+} 
+2
+----------------Page (17) Break----------------
+19
+Héritage: Chaînage des constructeurs
+public  class A {
+public  int x;
+public A(){}
+public  A (int x) {
+this.x = x;
+}
+} 
+public  class B extends  A {
+public  int y;
+public  B (int x, int y) {
+this.x = x;
+this.y = y;
+}
+} 
+1
+public  class A {
+public  int x;
+public  A (int x) {
+this.x = x;
+}
+} 
+public  class B extends  A {
+public  int y;
+public  B (int x, int y) {
+super(x);
+this.y = y;
+}
+} 
+2
+Solution  1Solution  2
+----------------Page (18) Break----------------
+20
+Surcharge & Redéfinition
+----------------Page (19) Break----------------
+21
+Surcharge (overloading)
+❖DEF 1: Un même nom de fonction pour plusieurs fonctions qui sont distinguées par 
+leur signature (Nom de la méthodeet la liste des paramètres)
+❖DEF 2: Avoir une même  méthode qui possède des paramètres  de nature 
+différentes...
+public voidshowMessage(Stringa)                { }
+public void showMessage(inta)                      { }
+public voidshowMessage(Stringa, Stringb)  { }
+Signature de la méthode 
+----------------Page (20) Break----------------
+22
+Redéfinition (override)
+❖Permet à une sous-classe de fournir une définition spécifique d'une méthode déjà définie dans 
+l'une de ses superclasses.
+❖La version de la méthode de la super classe peut être invoquée à partir du code de la sous-
+classe en utilisant le mot clé super (exemple : super.doCallOverridenMethod()). 
+❖Redéfinition est un concept qui s'applique uniquement aux méthodes et non pas aux variables.
+❖La redéfinition est la possibilité d’utiliser exactement la même signature pour définir un 
+service dans un type et dans un sous type. Le type de retour du service doit être le même, 
+mais la visibilité peut changer.
+----------------Page (21) Break----------------
+23
+Redéfinition (override)
+❖La redéfinition des méthodes est possible uniquement pour les méthodes qui sont héritables.
+⚠Une méthode marquée privaten'est pas héritable. 
+On peut fournir une implémentation de la même méthode avec le même nom, la même signature, et le même type de retour dans 
+la sous-classe, c’est comme si on a créé une nouvelle méthode qui n'a absolument rien avoir avec la méthode de superclasse.
+❖Une sous-classe dans un package différent de celui de la super classe peut redéfinir toutes les 
+méthodes de cette classe qui sont marquées public ou protected.
+❖On ne peut pas redéfinir une méthode marquée final. 
+----------------Page (22) Break----------------
+24
+Surcharge & Redéfinition : Exemple
+----------------Page (23) Break----------------
+25
+Classe abstraite & Classe 
+scellées
+----------------Page (24) Break----------------
+26
+Classes et méthodes abstraites: Définition
+❖Une classe abstraite (abstract classen anglais) est une classe qui ne peut pas être 
+instanciée directement. Elle sert de modèle pour les sous-classes. 
+❖Les classes abstraites sont déclarées à l'aide du mot-clé abstract.
+❖Les classes abstraites peuventcontenir des méthodes abstraites(0 ou plusieurs).
+ℹUne méthode abstraite est une méthode déclarée sans implémentation dans la 
+classe abstraite. Toutes les sous-classes de la classe abstraite doivent fournir une 
+implémentation concrète de toutes les méthodes abstraites héritées.
+public abstract void sayHello() ;
+public void sayHello() {
+System.out.println("Hell
+o");
+}
+Classe Mére
+Classe Fille
+----------------Page (25) Break----------------
+27
+Classes et méthodes abstraites: Utilisation
+❖L'utilisation de classes abstraites est courante lorsque vous souhaitez définir une structure 
+de base commune pour un groupe de classes apparentées tout en forçant les sous-classes 
+à implémenter certaines méthodes spécifiques à leur contexte.
+public abstract class  Person  {
+public abstract void  calculateSalary();
+}
+public  class  Developer extends Person  {
+public  void calculateSalary  () { ... }
+}
+public  class  Manager extends Person  { }
+Cette  classe  générera  une erreur de 
+compilationcar elle  n'a  pas  redéfinie 
+la méthode  calculateSalary()
+----------------Page (26) Break----------------
+28
+Classes scellées: Définition et Utilisation 
+❖Une classe scellée (ou "sealed class"  en anglais) est une classe qui autorise l'héritage à 
+certaines classes en utilisant le mot clé permits.
+❖Cependant, toutes les sous-classes  doivent être déclarés avec le mot clé finalpour 
+interdire l'héritage davantage ou non-sealedpour permettrel'héritage d'autres classes.
+sealed class  Shape permits Circle, Rectangle,  Triangle  { }
+non-sealedclass  Circle extends Shape  {}
+final class  Rectangle extends Shape  {}
+class  Triangle extends Shape  {}
+class  OtherShape extends Shape  {}
+Cette  classe  générera  une erreur de 
+compilationcar elle  n'est  pas 
+autorisée  à étendre  Shape.
+Cette  classe  générera  une erreur de 
+compilationcar elle  doit  être  une 
+classe final ou non-sealed.
+----------------Page (27) Break----------------
+29
+Classes scellées : Résumé
+❖La déclaration de la classe mère comme scellée principalement limite l'héritagepour les 
+sous-classes autorisées.
+❖Le choix entre final et non scellée dépend de votre intention quant à la possibilité 
+d'extension de la sous-classe. 
+⚠Utilisez finallorsque vous voulez interdire toute extension supplémentaire.
+⚠Utilisez non-sealedlorsque vous voulez permettrel’extension à d'autres classes.
+----------------Page (28) Break----------------
+30
+Merci pour votre attention 
+----------------Page (29) Break----------------

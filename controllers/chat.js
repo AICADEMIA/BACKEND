@@ -1,56 +1,70 @@
 import fs from 'fs';
-import 'dotenv/config';
-import { Ollama } from 'ollama';
+import 'dotenv/config'; 
+import fetch from 'node-fetch';
 import { translate } from '@vitalets/google-translate-api';
 
+let currentPageIndex = 0;
+
 export async function runModel(res) {
+    const content1 = fs.readFileSync('./data.txt', 'utf-8');
+    const pages = splitIntoPages(content1);
+
+    const url = 'http://localhost:11434/api/generate';
+    const data = {
+        model: 'llama2',
+        prompt: '',
+        stream : true,
+    };
+
     try {
-        // Lire le contenu du fichier data.txt
-        let content = fs.readFileSync('./data.txt', 'utf-8');
+        if (currentPageIndex < pages.length) {
+            const prompt = addIntroduction(pages[currentPageIndex] + "\n" + (pages[currentPageIndex + 1] || ''));
+            data.prompt = prompt;
 
-        // Séparer le contenu en pages
-        const pages = content.split('----------------Page ');
+            const response = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-        // Sélectionner les cinq premières pages
-        const firstFivePages = pages.slice(0, 1).join('----------------Page ');
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+            }
 
-        // Enlever les cinq premières pages du fichier
-        const remainingPages = pages.slice(1).join('----------------Page ');
+            let responseBody = '';
+            for await (const part of response.body) {
+                responseBody += part;
+            }
 
-        // Enregistrer le reste des pages dans le fichier data.txt
-        fs.writeFileSync('./data.txt', remainingPages);
+            const lines = responseBody.trim().split('\n');
+            const messagesArray = lines.map(line => JSON.parse(line).response);
 
-        // Réassigner le contenu du fichier après avoir enlevé les cinq premières pages
-        content = remainingPages;
+            const formattedMessages = messagesArray.map(formatMessage).join('');
+            const translatedResponse = await translate(formattedMessages, { to: 'fr' });
 
-        const ollama = new Ollama({ host: 'http://localhost:11434' })
-        const response = await ollama.chat({
-            model: 'llama2',
-            messages: [
-                {
-                    role: 'system',
-                    content: `Votre mission est d'enrichir ce contenu ${firstFivePages} (vous devez être strict et ne pas fournir d'informations autres que celles demandées dans votre mission). Assurez-vous que le contenu est cohérent et long (trop long)`
-                }
-            ],
-            stream: true,
-            keep_alive: 5400,
-        });
-
-        // Extraire les messages du modèle
-        const messagesArray = [];
-        for await (const part of response) {
-            messagesArray.push(part.message.content);
+            res.status(200).json({ message: translatedResponse.text });
+console.log(currentPageIndex)
+            currentPageIndex += 2; // Passer à la prochaine paire de pages
+        } else {
+            res.status(200).json({ message: "Le cours est terminé." });
         }
-        const allMessages = messagesArray.join('');
-
-        // Traduire la réponse de l'anglais au français
-        const translatedResponse = await translate(allMessages, { to: 'fr' });
-
-        console.log('Texte traduit :', translatedResponse.text);
-
-        res.status(200).json({ message: translatedResponse.text });
+        
     } catch (error) {
         console.error('Erreur lors de l\'exécution du modèle :', error);
         res.status(500).json({ error: error.message });
     }
+}
+
+function formatMessage(message) {
+    return message.replace(/\n/g, ' ');
+}
+
+function addIntroduction(content) {
+    const introduction = "Vous êtes un enseignant expérimenté. Voici un résumé des points principaux couverts que vous devez enrichir , vous devez donner un cours sans faire signe des instruction donner : ";
+    return introduction + content;
+}
+
+function splitIntoPages(content) {
+    const pages = content.split(/-{4,}Page \(\d+\) Break-{4,}/);
+    return pages.filter(page => page.trim() !== '');
 }
