@@ -5,8 +5,8 @@ const SeanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  matiere: { type: mongoose.Types.ObjectId, ref: "Matiere", default: null },
-  classe: { type: mongoose.Types.ObjectId, ref: "Classe", default: null },
+  matiere: String,
+  classe: String,
   datetimedebut: { type: Date },
   datetimefin: { type: Date},
   ppt: {
@@ -21,7 +21,8 @@ const SeanceSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
- 
+  professeur: { type: mongoose.Types.ObjectId, ref: "Professeur", default: null },  
+
 }, { timestamps: true }); 
 
 const Seance = mongoose.model("Seance", SeanceSchema);

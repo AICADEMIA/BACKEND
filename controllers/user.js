@@ -35,8 +35,6 @@ export async function createUser(req, res) {
       }
   
       const hashPass = await bcrypt.hash(password, 10);
-  
-    
 
   
       let user;
@@ -83,6 +81,46 @@ export async function createUser(req, res) {
   
 
 
+  export async function createProf(req, res) {
+
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+  
+    try {
+      const {
+        firstname,
+        lastname,
+        email,
+        password,
+        role,
+        organisation,
+      } = req.body;
+  
+  
+      const hashPass = await bcrypt.hash(password, 10);
+
+  
+      let user;
+    
+        user = await Professeur.create({
+          firstname,
+          lastname,
+          email,
+          password: hashPass,
+          role:"professeur",
+        });
+  
+  
+      return res.status(201).json({ user });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Error creating user", error });
+    }
+  }
+
 /////////////////////////////////
 
   export async function login(req, res, next) {
@@ -91,7 +129,7 @@ export async function createUser(req, res) {
   
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(401).json({
+        return res.status(400).json({
           message: "No user found",
         });
       }
@@ -105,9 +143,12 @@ export async function createUser(req, res) {
       }
   
       const accessToken = await signAccessToken(user.id);
+      const userole = user.role;
+
       res.status(200).json({
         message: "Login successful",
-        accessToken,     });
+        accessToken,
+         userole     });
     } catch (error) {
       return res.status(500).json({
         message: "Error logging in",
@@ -153,7 +194,7 @@ export async function createUser(req, res) {
 export function getAllTeachers(req, res) {
     User.findById(req.auth.userId)
       .then((user) => {
-        if (user.role === "superAdmin") {
+        if (user.role === "admin") {
           // Utilisateurs avec le rôle "admin"
           User.find({
             role: "professeur",
@@ -177,7 +218,7 @@ export function getAllTeachers(req, res) {
   }
   
 
-  export function updateUser(req, res) {
+  export function updateProfil(req, res) {
     if (!req.auth || !req.auth.userId) {
       return res.status(400).json({ error: "Invalid user ID" });
     }
@@ -199,6 +240,9 @@ export function getAllTeachers(req, res) {
   }
   
 
+
+  
+  
 
   export function getTeacherForAdmin(req, res) {
     const AdminId = req.auth.userId;
@@ -273,3 +317,29 @@ export function getAllTeachers(req, res) {
         res.status(500).json({ error: err.message });
       });
   }
+
+
+
+
+  export async function deleteteacher(req, res) {
+    const AdminId = req.auth.userId;
+    const profId = req.params.prof
+    Admin.findById(AdminId)
+      .then((admin) => {
+        if (!admin) {
+          return res.status(404).json({ message: "admin not found" });
+        }
+        Professeur.findOneAndDelete({ _id : profId })
+          .then((prof) => {
+            res.status(200).json(prof);
+          })
+          .catch((err) => {
+            res.status(500).json({ error: err });
+          });
+      })
+      .catch((err) => {
+        res.status(500).json({ error: err });
+        console.log(err)
+      });
+  }
+

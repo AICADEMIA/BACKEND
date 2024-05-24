@@ -6,23 +6,26 @@ import {
     assignTeacherToAdmin,
     consulterProfil,
     getTeacherForAdmin,
-    updateUser,
+    updateProfil,
     getAllTeachers,
     getAllAdmin,
     login,
     createUser,
+    deleteteacher,
+    createProf
  
   } from "../controllers/user.js";
 
   const router = express.Router();
 
   router.route("/assignteach/:professeurId").post(auth,assignTeacherToAdmin);
-  router.route("/").post(createUser).get(auth,getAllAdmin).put(auth,updateUser);
+  router.route("/").post(createUser).get(auth,getAllAdmin).put(auth,updateProfil);
   router.route("/login").post(login);
+  router.route("/prof").post(createProf);
   router.route("/teachers").get(auth,getAllTeachers);
   router.route("/techAdmin").get(auth,getTeacherForAdmin);
   router.route("/profil").get(auth,consulterProfil);
-
+  router.route("/:prof").delete(auth,deleteteacher);
 
 
 

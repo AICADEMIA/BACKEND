@@ -1,34 +1,37 @@
 import express from 'express';
-import { createGroup,createTeam ,getAllGroups } from '../controllers/classe.js';
+import { createGroup,createTeam ,getAll } from '../controllers/classe.js';
 import Group from '../models/group.js';
+import Classe from '../models/classe.js';
 import Graph from'../models/graphmodel.js'
 const router = express.Router();
 
+
+router.route("/").get(getAll);
+
+
 router.post('/', async (req, res) => {
-    try {
+  try {
+    const graph = new Graph(req.body);
+    console.log("from post man", req.body);
 
-      const  graph = new Graph(req.body) //req.body;
-          console.log("from post man",req.body)
-            
+    const nouvelleClasse = new Classe({
+      classeName: req.body.classeName,
+      etudiants: req.body.etudiants, 
+      professeur: req.body.professeurId 
+    });
 
-   
+    const classeEnregistre = await nouvelleClasse.save();
 
-   
-  
-      const meetingData =  graph ;
-      await createGroup(res, req.body);
-        //  console.log("aaaaaaaaaaaaaa:",graph)
-  
-    } catch (error) {
-      console.error('Error in route handler:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+    const meetingData = graph;
 
+    await createGroup(res, req.body);
 
-  
-
-
+    res.status(201).json({ classe: classeEnregistre }); 
+  } catch (error) {
+    console.error('Error in route handler:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
   

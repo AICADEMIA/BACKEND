@@ -26,7 +26,10 @@ const storage = diskStorage({
     callback(null, join(_dirname, `../public`));
   },
   filename: (req, file, callback) => {
-    callback(null, `${Date.now()}.${MIME_TYPES[file.mimetype]}`);
+    const originalName = file.originalname.split('.'); // Sépare le nom du fichier et son extension
+    const extension = originalName.pop(); // Récupère l'extension
+    const newName = `${originalName.join('.')}_${Date.now()}.${extension}`; // Nouveau nom avec timestamp
+    callback(null, newName);
   },
 });
 

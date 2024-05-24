@@ -40,10 +40,10 @@ export const createTeamsMeeting = async (res, meetingData) => {
     });
 
 
-    console.log('Meeting created:', response.data);
+    //console.log('Meeting created:', response.data);
 
   } catch (error) {
-    console.error('Error creating meeting:', error);
+    console.error('Error creating meeting:');
 
   }
 };
@@ -115,28 +115,6 @@ export const createonline = async (res, meetingData) => {
 
 
 
-
-
-
-
-export async function getAllSeances(req, res) {
-  try {
-    const seances = await Seance.find()
-     .populate("matiere", "title")  
-     .populate('classe', "classeName"); 
-
-    res.status(200).json({ seances });
-    console.log(matiere)
-  } catch (error) {
-    console.error('Error getting all seances:', error);
-    res.status(500).json({ error: 'Error getting all seances' });
-  }
-}
-
-
-
-
-
   export async function getLastAddedSeance(req, res) {
     try {
       const lastSeance = await Seance.findOne().sort({ createdAt: -1 });
@@ -147,8 +125,16 @@ export async function getAllSeances(req, res) {
     }
   }
 
-
-
+  export function getAllSeances(req, res) {
+    Seance.find({ professeur: req.auth.userId })
+  
+      .then((docs) => {
+        res.status(200).json(docs);
+      })
+      .catch((err) => {
+        res.status(500).json({ error: err });
+      });
+}
 
 
 

@@ -29,33 +29,14 @@ export async function createMatiere(req, res) {
   try {
     const { title, chapitre, charge } = req.body;
 
-    // Récupérer le fichier PDF à partir de req.files
-    const courFile = req.files['cour'] ? req.files['cour'][0] : null;
-    const pptFile = req.files['ppt'] ? req.files['ppt'][0] : null;
-
-    // Si aucun fichier PDF n'est inclus dans la requête, renvoyer une erreur
-    if (!courFile || !courFile.mimetype.startsWith('application/pdf')) {
-      return res.status(400).json({ error: 'Veuillez inclure un fichier PDF' });
-    }
-
     // Créer une nouvelle instance de Matiere avec les chemins de fichier
     const newMatiere = new Matiere({ 
       title, 
       chapitre, 
       charge, 
-      cour: courFile.path, 
-      ppt: pptFile ? pptFile.path : null 
     });
 
     const savedMatiere = await newMatiere.save();
-
-    const pdfFilePath = courFile.path;
-
-    const extractedText = await extractTextFromPDF(pdfFilePath);
-
-    fs.writeFileSync('./data.txt', extractedText);
-
-    console.log(extractedText)
     
 
     res.status(201).json(savedMatiere);
@@ -68,10 +49,10 @@ export async function createMatiere(req, res) {
 // Update Matiere by ID
 export async function updateMatiere(req, res) {
   try {
-    const { title, chapitre, ppt, cour, charge } = req.body;
+    const { title, chapitre, charge } = req.body;
     const updatedMatiere = await Matiere.findByIdAndUpdate(
       req.params.id,
-      { title, chapitre, ppt, cour, charge },
+      { title, chapitre , charge },
       { new: true }
     );
     if (!updatedMatiere) {

@@ -22,7 +22,7 @@ const port = process.env.PORT || 9090;
 mongoose.set("strictQuery", false);
 
 mongoose
-  .connect("mongodb+srv://dali:KHe3zKln4Z1t1298@cluster0.4n6wuk0.mongodb.net/pfe", {
+  .connect("mongodb+srv://dali:KHe3zKln4Z1t1298@cluster0.4n6wuk0.mongodb.net/aimentor", {
   })
   .then(() => console.log("connected"))
   .catch((error) => console.log(error));

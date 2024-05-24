@@ -1,80 +1,142 @@
 import express from 'express';
-import { createTeamsMeeting,updateonline,createonline ,getLastAddedSeance ,GetEvent } from '../controllers/seance.js';
+import { createTeamsMeeting,updateonline,createonline,getAllSeances ,getLastAddedSeance ,GetEvent } from '../controllers/seance.js';
 import Seance from '../models/seance.js';
 import { uploadMultiple } from '../middlewares/multer-config.js';
 import { logRequest } from '../middlewares/error-handler.js';
+import axios from 'axios';
+import cron from 'node-cron';
+import path from 'path';
+import { promisify } from 'util';
+import auth from "../middlewares/auth.js";
+import fs from 'fs';
+import PDFParser from 'pdf2json';
 
 const router = express.Router();
 
 
+router.route("/").get(auth,getAllSeances);
 
 
-
-
-
-router.post('/', uploadMultiple, async (req, res) => {
+const scheduleCronJob = async (start, ChapitreName) => {
   try {
-    const { subject, start, end, attendees, ChapitreName } = req.body;
+    const startDate = new Date(start);
+    if (isNaN(startDate)) throw new Error('Invalid start date');
 
-    if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
-        console.error('La liste des participants est vide ou non définie.');
-        return res.status(400).json({ error: 'Attendees list is empty or not defined' });
-    }
+    console.log('Start date:', startDate);
 
-    const startDateTime = new Date(start.dateTime);
-    const endDateTime = new Date(end.dateTime);
-
-    if (isNaN(startDateTime) || isNaN(endDateTime)) {
-        console.error('Les valeurs de date ne sont pas valides.');
-        return res.status(400).json({ error: 'Invalid date format' });
-    }
-
-    const formattedAttendees = attendees.map(attendee => ({
-      emailAddress: {
-          address: attendee.emailAddress.address.toString(),
-      },
-      type: attendee.type
-    }));
-    
-
-  const meetingData = {
-    subject,
-    start: {
-      dateTime: startDateTime.toISOString(),
-      timeZone: start.timeZone
-    },
-    end: {
-      dateTime: endDateTime.toISOString(),
-      timeZone: end.timeZone
-    },
-    attendees: formattedAttendees,
-    isOrganizer: false,
-    organizer : {
-        emailAddress: {
-            address:"mohamedali.charfeddine1@esprit.tn",
-            name: "Dali"
+    // Convertir la date en format cron
+    const job = cron.schedule(
+      `${startDate.getMinutes()} ${startDate.getHours()} ${startDate.getDate()} ${
+        startDate.getMonth() + 1
+      } *`,
+      async () => {
+        console.log('Cron job triggered at:', new Date());
+        try {
+          // Envoi de la requête à l'URL
+          await axios.post('http://127.0.0.1:5000/run_script', { ChapitreName });
+          console.log('Request sent successfully.');
+        } catch (error) {
+          console.error('Error sending request:', error);
         }
-    }, 
+        job.destroy();
+      },
+      {
+        timezone: 'Europe/Paris',
+        scheduled: true // Planifier immédiatement
+      }
+    );
 
-    isOnlineMeeting: true,
-    onlineMeetingProvider: 'teamsForBusiness',
-    categories: [
-      "Green category"
-  ],
-  };
-  
-  await createTeamsMeeting(res, meetingData);
+    console.log('Cron job scheduled successfully for:', startDate);
+  } catch (error) {
+    console.error('Error in scheduling cron job:', error);
+  }
+};
 
-    const newSeance = new Seance({
-        title: subject,
-        datetimedebut: startDateTime,
-        datetimefin: endDateTime,
-        cour: req.files.cour[0].path,
-        ppt: req.files.ppt[0].path,
-        ChapitreName
+
+
+async function extractTextFromPDF(pdfFilePath) {
+  return new Promise((resolve, reject) => {
+    const pdfParser = new PDFParser(this,1);
+
+    pdfParser.on('pdfParser_dataError', errData => {
+      reject(errData.parserError);
     });
 
+    pdfParser.on('pdfParser_dataReady', () => {
+      const extractedText = pdfParser.getRawTextContent();
+      resolve(extractedText); // Résoudre la promesse avec extractedText
+    });
+
+    pdfParser.loadPDF(pdfFilePath);
+  });
+}
+
+
+
+
+
+router.post('/',auth, uploadMultiple, async (req, res) => {
+  try {
+    console.log('Date de l\'ajout de la séance :', new Date());
+
+    const { title, datetimedebut, datetimefin, ChapitreName ,cour , ppt } = req.body;
+
+    const start = new Date(datetimedebut);
+    const end = new Date(datetimefin);
+
+
+    const meetingData = {
+      subject: title,
+      start: {
+        dateTime: start.toISOString(),
+        timeZone: "UTC"
+      },
+      end: {
+        dateTime: end.toISOString(),
+        timeZone: "UTC"
+      },
+      attendees: [
+        { emailAddress: { address: "mohamedali.charfeddine1@esprit.tn" }, type: "required" },
+        { emailAddress: { address: "mohamedislem.samaali@esprit.tn" }, type: "required" }
+      ],
+      isOrganizer: false,
+      organizer: {
+        emailAddress: {
+          address: "mohamedali.charfeddine1@esprit.tn",
+          name: "Dali"
+        }
+      },
+      isOnlineMeeting: true,
+      onlineMeetingProvider: 'teamsForBusiness',
+      categories: ["Green category"]
+    };
+
+    await createTeamsMeeting(res, meetingData);
+
+    const courFile = req.files['cour'] ? req.files['cour'][0] : null;
+    const pptFile = req.files['ppt'] ? req.files['ppt'][0] : null;
+    
+    const newSeance = new Seance({
+      title,
+      datetimedebut: start.toISOString(),
+      datetimefin: end.toISOString(),
+      cour: courFile ? courFile.path : null,
+      ppt: pptFile ? pptFile.path : null,
+      ChapitreName,
+      professeur : req.auth.userId
+    });
+    
+    if (courFile) {
+      const pdfFilePath = courFile.path;
+      const extractedText = await extractTextFromPDF(pdfFilePath);
+      fs.writeFileSync('./data.txt', extractedText);
+    }
+    
+
     const savedSeance = await newSeance.save();
+
+    // Schedule the cron job for the specified start date
+    await scheduleCronJob(start, ChapitreName);
 
     res.status(201).json(savedSeance);
   } catch (error) {
@@ -82,8 +144,6 @@ router.post('/', uploadMultiple, async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
   router.get('/last', getLastAddedSeance);
 

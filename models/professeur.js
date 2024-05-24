@@ -4,9 +4,7 @@ import User from "../models/user.js";
 
 const professeurSchema = new Schema(
   {
-    organisation: { type: String, required: true },
-
-    superviseur: { type: mongoose.Types.ObjectId, ref: "Admin", default: null },
+    organisation: { type: String, required: false },
 
 
     Classe: { type: mongoose.Types.ObjectId, ref: "Classe", default: null },  

@@ -52,17 +52,25 @@ export const createGroup = async (res, meetingData) => {
     await groupToSave.save();
 
     // Send a response to the client après l'enregistrement
-    res.status(201).json(response.data);
-    
+console.log('up')    
   } catch (error) {
     console.error('Error creating meeting:', error);
 
     // Send an error response to the client
-    res.status(500).json({ error: 'Internal Server Error' });
   }
 }; 
 
 
+
+export function getAll(req, res) {
+  Classe.find({})
+    .then((posts) => {
+      res.status(200).json(posts);
+    })
+    .catch((err) => {
+      res.status(500).json(err);
+    });
+}
 
 
 

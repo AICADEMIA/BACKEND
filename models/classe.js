@@ -6,7 +6,6 @@ const EtudiantSchema = new mongoose.Schema({
     email: {
       type: String,
       required: true,
-      unique: true,
     },
   });
 
@@ -15,6 +14,7 @@ const ClasseSchema = new mongoose.Schema({
     classeName :{
         type: String,
         required: true,
+        unique : true
       },
 
    etudiants: [EtudiantSchema], 
